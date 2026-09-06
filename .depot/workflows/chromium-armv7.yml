@@ -1,0 +1,80 @@
+name: Chromium 120 for webOS ARMv7
+
+# A push does not start compute. Start explicitly with `depot ci run`.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chromium120-armv7
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Native x86_64 cross build for ARM32 webOS
+    runs-on: depot-ubuntu-24.04-64
+    container:
+      image: ubuntu:22.04
+    defaults:
+      run:
+        shell: bash
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      LANG: C.UTF-8
+      JOBS: '64'
+    steps:
+      # Depot inserts its local-diff patch step immediately after checkout.
+      # These tools must exist before checkout and that injected step.
+      - name: Bootstrap checkout and Depot patch tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git curl jq
+
+      - name: Check out build recipe
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Ubuntu 22.04 cross-build dependencies
+        run: bash build/armv7/install-deps.sh
+
+      - name: Stage recipe and verify disk capacity
+        run: bash build/armv7/stage.sh
+
+      - name: Download and verify pinned Chromium source and webOS SDK
+        run: bash /build/recipe/prepare.sh
+
+      - name: Verify compilers and configure ARMv7
+        run: bash /build/recipe/configure.sh
+
+      - name: Compile Chromium with 64 jobs
+        run: bash /build/recipe/build.sh
+
+      - name: Export ARM32 runtime and checksums
+        run: bash /build/recipe/export.sh
+
+      - name: Save browser archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromium120-armv7
+          path: |
+            /build/export/chromium120-armv7.tar.gz
+            /build/export/chromium120-armv7.tar.gz.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+      - name: Collect bounded build diagnostics
+        if: always()
+        run: bash build/armv7/collect-diagnostics.sh
+
+      - name: Save build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromium120-armv7-diagnostics
+          path: /build/diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
