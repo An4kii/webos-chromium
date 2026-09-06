@@ -30,7 +30,7 @@ jobs:
       - name: Bootstrap checkout and Depot patch tools
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl jq software-properties-common
+          apt-get install -y --no-install-recommends ca-certificates curl jq software-properties-common gpg-agent
           # Depot's injected patch step uses `git apply --allow-empty`.
           # Ubuntu 22.04's Git 2.34 does not support it. Use the Git project's
           # documented Ubuntu PPA while retaining the tested 22.04 toolchain.
