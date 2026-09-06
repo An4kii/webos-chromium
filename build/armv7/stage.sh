@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-recipe=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+recipe=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 [[ $(uname -m) == x86_64 ]] || { echo 'An x86_64 Linux builder is required'; exit 2; }
 [[ $(nproc) -ge 64 ]] || { echo 'Expected the requested 64-CPU sandbox'; exit 2; }
 [[ $(awk '/^MemAvailable:/ {print $2}' /proc/meminfo) -ge 134217728 ]] || { echo 'Need at least 128 GiB available RAM for 64 compile jobs'; exit 2; }
@@ -8,9 +8,11 @@ recipe=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 mkdir -p /build/recipe /build/state /build/logs
 cp -a "$recipe/." /build/recipe/
 chmod +x /build/recipe/clang-webos-wrapper /build/recipe/host-pkg-config
-repository=$(git -C "$recipe" rev-parse --show-toplevel)
-git -C "$repository" rev-parse HEAD > /build/state/recipe-git-head
-git -C "$repository" diff --binary HEAD -- build/armv7 .depot/workflows > /build/state/recipe-local-changes.patch
+# The checkout is bind-mounted with the runner's ownership. Scope Git trust to
+# this known repository for these two read-only provenance commands only.
+repository=$(cd -- "$recipe/../.." && pwd -P)
+git -c safe.directory="$repository" -C "$repository" rev-parse HEAD > /build/state/recipe-git-head
+git -c safe.directory="$repository" -C "$repository" diff --binary HEAD -- build/armv7 .depot/workflows > /build/state/recipe-local-changes.patch
 uname -a > /build/state/build-host.txt
 df -h /build
 df -i /build
