@@ -4,6 +4,10 @@ This workflow uses a 64-CPU, 256-GB x86_64 Depot CI sandbox to cross-compile
 Chromium 120.0.6099.269 for ARMv7 webOS. Its Ubuntu 22.04 job container matches
 the build environment already used for the local build. No cloud-provider
 account, GitHub organization, or imported TV credentials are used by this recipe.
+Git is updated from the [Git project's documented Ubuntu PPA](https://git-scm.com/install/linux)
+before checkout: Depot's local-patch step requires `git apply --allow-empty`,
+which Ubuntu 22.04's original Git 2.34 does not support. The workflow checks that
+exact operation before proceeding.
 
 ## Start from the prepared checkout
 
