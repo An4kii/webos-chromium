@@ -74,3 +74,10 @@ print('Source compatibility patches applied')
 insert('media/gpu/sandbox/BUILD.gn', '      !is_castos) {',
        '      !is_castos && !is_webos) {  # WEBOS_CHROMIUM_NO_MESA_DRI',
        'WEBOS_CHROMIUM_NO_MESA_DRI')
+
+# Backport the upstream guard for final fullscreen exit: new_element is null
+# when a fullscreen video/ancestor is removed or the final fullscreen exits.
+insert('third_party/blink/renderer/core/fullscreen/fullscreen.cc',
+    '  document.GetStyleEngine().EnsureUAStyleForFullscreen(*new_element);',
+    '  // WEBOS_CHROMIUM_FULLSCREEN_NULL_GUARD\n  if (new_element) {\n    document.GetStyleEngine().EnsureUAStyleForFullscreen(*new_element);\n  }',
+    'WEBOS_CHROMIUM_FULLSCREEN_NULL_GUARD')
