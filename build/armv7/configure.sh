@@ -58,6 +58,8 @@ python3 /build/recipe/configure-ime.py
 python3 /build/recipe/configure-media-diagnostics.py
 python3 /build/recipe/configure-buffering-diagnostics.py
 python3 /build/recipe/configure-presentation-diagnostics.py
+python3 /build/recipe/configure-pointer.py
+python3 /build/recipe/configure-window-lifecycle.py
 python3 /build/recipe/configure-args.py
 "$SRC/buildtools/linux64/gn" --root="$SRC" gen /build/out/armv7 --fail-on-unused-args
 touch /build/state/configured
