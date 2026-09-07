@@ -54,6 +54,10 @@ if p.read_text() != s:
     p.write_text(s)
 PTRACE
 python3 /build/recipe/configure-source.py
+python3 /build/recipe/configure-ime.py
+python3 /build/recipe/configure-media-diagnostics.py
+python3 /build/recipe/configure-buffering-diagnostics.py
+python3 /build/recipe/configure-presentation-diagnostics.py
 python3 /build/recipe/configure-args.py
 "$SRC/buildtools/linux64/gn" --root="$SRC" gen /build/out/armv7 --fail-on-unused-args
 touch /build/state/configured
